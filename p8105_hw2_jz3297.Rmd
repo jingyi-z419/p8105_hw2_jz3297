@@ -150,9 +150,39 @@ filter(transit_tidy_df, route_number == "A", ada == "TRUE") %>%
 
 ## Problem 3
 
+Clean the data in pols-month.
 
+```{r}
+pols_month = read_csv("./data/fivethirtyeight_datasets/pols-month.csv") %>%
+  separate(mon, into = c("year", "month", "day"), convert = TRUE)
+```
 
+First step: Replace month number by month names.
 
+```{r}
+month_df =
+  tibble(
+    month = 1:12,
+    month_name = month.name
+  )
+
+pols_month =
+  left_join(pols_month, month_df, by = "month")
+
+pols_month =
+  mutate(pols_month, president = case_when(
+    prez_gop == "1" ~ "gop",
+    prez_dem == "1" ~ "dem"
+  ))
+select(pols_month, -day, -prez_gop, -prez_dem, -month) %>%
+  relocate(month_name, .after = year)
+```
+
+Second step: 
+
+```{r}
+
+```
 
 
 
