@@ -73,4 +73,94 @@ This dataset contains information from the Mr. Trashwheel trash collector in Bal
 * The median number of sports balls found in a dumpster in 2017 was `r trashwheel_df %>% filter(year == 2017) %>% pull(sports_balls) %>% median()`.
 * The total precipitation in 2018 was `r precip_df %>% filter(year == 2018) %>% pull(total) %>% sum()` inches.
 
+## Problem 2
+
+Read and clean the NYC Transit Subway Entrance and Exit dataset.
+
+```{r}
+transit_df =
+  read_csv("./data/NYC_Transit_Subway_Entrance_And_Exit_Data.csv") %>%
+  janitor::clean_names() %>%
+  select(line:entry, vending, ada) %>%
+  mutate(entry = recode(entry, "YES" = "TRUE", "NO" = "FALSE", .default = NULL))
+```
+
+This dataset contains information on NYC transit. Variables included in this dataset are line, station name, station latitude/longitude, routes served, entry, entrance type, vending, and ADA compliance. This dataset has `r nrow(transit_df)` rows and `r ncol(transit_df)` columns. So far, all column names are converted to lowercase and snakecase form. Then, the uninterested columns are removed from the dataset. The entry variable is converted from character to a logical variable with values of "TRUE" or "FALSE". This dataset at this stage is not tidy yet. The routes served columns (route1-route11) should be combined into one single column.  
+
+
+
+How many distinct stations are there?
+
+```{r distinct_stations}
+select(transit_df, line, station_name) %>%
+  distinct(line, station_name) %>%
+  count()
+```
+
+How many stations are ADA compliant?
+
+```{r ada_compliant}
+filter(transit_df, ada == "TRUE") %>%
+  select(ada, line, station_name) %>% 
+  distinct(ada, line, station_name) %>% 
+  count()
+```
+
+What proportion of station entrances/exits without vending allow entrance?
+
+```{r}
+filter(transit_df, entry == "TRUE", vending == "NO") %>%
+  select(line, station_name, entry, vending) %>%
+  distinct(line, station_name, entry, vending) %>%
+  count()
+43/465
+```
+
+Reformat data that makes route number and route name distinct variables.
+
+```{r}
+transit_tidy_df = 
+  mutate_at(transit_df, vars(route8:route11), as.character) %>%
+  pivot_longer(
+    route1:route11,
+    names_to = "route_name",
+    names_prefix = "route",
+    values_to = "route_number"
+  ) %>%
+  drop_na(route_number)
+```
+
+How many distinct stations serve the A train?
+
+```{r}
+filter(transit_tidy_df, route_number == "A") %>%
+  select(route_number, line, station_name) %>%
+  distinct(route_number, line, station_name) %>%
+  count()
+```
+
+Of the stations that serve the A train, how many are ADA compliant?
+
+```{r}
+filter(transit_tidy_df, route_number == "A", ada == "TRUE") %>%
+  select(route_number, ada, line, station_name) %>%
+  distinct(route_number, ada, line, station_name) %>%
+  count()
+```
+
+## Problem 3
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
