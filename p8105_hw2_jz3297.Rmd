@@ -81,7 +81,7 @@ Read and clean the NYC Transit dataset.
 transit_df =
   read_csv("./data/NYC_Transit_Subway_Entrance_And_Exit_Data.csv") %>%
   janitor::clean_names() %>%
-  select(line:entry, vending, ada, exit_only) %>%
+  select(line:entry, vending, ada) %>%
   mutate(entry = recode(entry, "YES" = "TRUE", "NO" = "FALSE", .default = NULL))
 ```
 
@@ -93,7 +93,8 @@ This dataset contains information on NYC transit. Variables included in this dat
 
 * The number of stations that are ADA compliant is `r filter(transit_df, ada == "TRUE") %>% select(ada, line, station_name) %>% distinct(ada, line, station_name) %>% count()`.
 
-* Proportion of station entrances/exits without vending allow entrance is `r filter(transit_df, entry == "TRUE" | exit_only == "Yes") %>% filter(vending == "NO") %>% select(line, station_name, vending) %>% distinct(line, station_name, vending) %>% nrow() / nrow(distinct(transit_df, line, station_name))`. 
+* Proportion of station entrances/exits without vending allow entrance is `r filter(transit_df, entry == "TRUE", vending == "NO") %>% distinct(line, station_name, entry, vending) %>% count()/filter(transit_df, vending == "NO") %>% distinct(line, station_name, entry, vending) %>% count()`.
+
 
 
 Reformat the transit dataset that makes route number and route name distinct variables.
