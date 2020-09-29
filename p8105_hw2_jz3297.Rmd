@@ -8,12 +8,13 @@ output: github_document
 library(tidyverse)
 library(readxl)
 ```
+<br />
 
 ## Problem 1 
 
-Read the Mr. Trashwheel dataset.
+##### Read the Mr. Trashwheel dataset.
 
-```{r}
+```{r tidy_trashwheel}
 trashwheel_df = 
   read_xlsx(
     "./data/Trash-Wheel-Collection-Totals-8-6-19.xlsx",
@@ -27,9 +28,11 @@ trashwheel_df =
   )
 ```
 
-Read participation data. For 2018 and 2017.
+<br />
 
-```{r}
+##### Read participation data. For 2018 and 2017.
+
+```{r tidy_precip}
 precip_2018 = 
   read_excel(
     "./data/Trash-Wheel-Collection-Totals-8-6-19.xlsx",
@@ -53,9 +56,11 @@ precip_2017 =
   relocate(year)
 ```
 
-Now combine annual precipitation.
+<br />
 
-```{r}
+##### Now combine annual precipitation.
+
+```{r join_precip}
 month_df = 
   tibble(
     month = 1:12,
@@ -71,13 +76,16 @@ left_join(precip_df, month_df, by = "month")
 This dataset contains information from the Mr. Trashwheel trash collector in Baltimore, Maryland. As trash enters the inner harbor, the trashwheel collects that trash, and stores it in a dumpster. The dataset contains information on year, month, and trash collected, include some specific kinds of trash. There are a total of `r nrow(trashwheel_df)` rows in our final dataset. Additional data sheets include month precipitation data. In this dataset:
 
 * The median number of sports balls found in a dumpster in 2017 was `r trashwheel_df %>% filter(year == 2017) %>% pull(sports_balls) %>% median()`.
+
 * The total precipitation in 2018 was `r precip_df %>% filter(year == 2018) %>% pull(total) %>% sum()` inches.
+
+<br />
 
 ## Problem 2
 
-Read and clean the NYC Transit dataset.
+##### Read and clean the NYC Transit dataset.
 
-```{r}
+```{r tidy_transit_1}
 transit_df =
   read_csv("./data/NYC_Transit_Subway_Entrance_And_Exit_Data.csv") %>%
   janitor::clean_names() %>%
@@ -85,20 +93,19 @@ transit_df =
   mutate(entry = recode(entry, "YES" = "TRUE", "NO" = "FALSE", .default = NULL))
 ```
 
-This dataset contains information on NYC transit. Variables included in this dataset are line, station name, station latitude/longitude, routes served, entry, entrance type, vending, and ADA compliance. This dataset has `r nrow(transit_df)` rows and `r ncol(transit_df)` columns. So far, all column names are converted to lowercase and snakecase form. Then, the uninterested columns are removed from the dataset. The entry variable is converted from character to a logical variable with values of "TRUE" or "FALSE". This dataset at this stage is not tidy yet. The routes served columns (route1-route11) should be combined into one single column.  
-
-
+This dataset contains information on NYC transit. Variables included in this dataset are line, station name, station latitude/longitude, route 1-11, entry, entrance type, vending, and ADA compliance. This dataset has `r nrow(transit_df)` rows and `r ncol(transit_df)` columns. So far, column names are converted to lowercase and snakecase form. Then, the uninterested columns are removed from the dataset. The entry variable is converted from a character variable to a logical variable with values of "TRUE" or "FALSE". This dataset at this stage is not considered as tidy yet. The routes served columns (route1-route11) should be combined into a single column.  
 
 * The number of distinct stations is `r select(transit_df, line, station_name) %>% distinct(line, station_name) %>% count()`. 
 
-* The number of stations that are ADA compliant is `r filter(transit_df, ada == "TRUE") %>% select(ada, line, station_name) %>% distinct(ada, line, station_name) %>% count()`.
+* The number of stations that are ADA compliant is `r filter(transit_df, ada == "TRUE") %>% distinct(ada, line, station_name) %>% count()`.
 
 * Proportion of station entrances/exits without vending allow entrance is `r filter(transit_df, entry == "TRUE" & vending == "NO") %>% count()/filter(transit_df, vending == "NO") %>% count()`.
 
+<br />
 
-Reformat the transit dataset that makes route number and route name distinct variables.
+##### Reformat the transit dataset that makes route number and route name distinct variables.
 
-```{r}
+```{r tidy_transit_2}
 transit_tidy_df = 
   mutate_at(transit_df, vars(route8:route11), as.character) %>%
   pivot_longer(
@@ -114,13 +121,13 @@ transit_tidy_df =
 
 * The number of stations that serve the A train and are ADA compliant is `r filter(transit_tidy_df, route_number == "A", ada == "TRUE") %>% select(route_number, ada, line, station_name) %>%  distinct(route_number, ada, line, station_name) %>% count()`.
 
-
+<br />
 
 ## Problem 3
 
-First, clean the pols-month dataset.
+##### First, clean the pols-month dataset.
 
-```{r}
+```{r tidy_pols}
 pols_month = read_csv("./data/fivethirtyeight_datasets/pols-month.csv") %>%
   separate(mon, into = c("year", "month", "day"), convert = TRUE)
 
@@ -144,10 +151,11 @@ pols_month_tidy_df =
     relocate(month_name, .after = year)
 ```
 
+<br />
 
-Second, clean the snp dataset.
+##### Second, clean the snp dataset.
 
-```{r}
+```{r tidy_snp}
 snp_df = read_csv("./data/fivethirtyeight_datasets/snp.csv") %>%
   separate(date, into = c("month", "day", "year"), convert = TRUE)
 
@@ -159,9 +167,11 @@ snp_tidy_df =
     relocate(month_name, .after = year)
 ```
 
-Third, clean the unemployment dataset.
+<br />
 
-```{r}
+##### Third, clean the unemployment dataset.
+
+```{r tidy_unemployment}
 unemployment_df = read_csv("./data/fivethirtyeight_datasets/unemployment.csv") %>%
   janitor::clean_names() %>%
   mutate_at(vars(jan:dec), as.character)
@@ -179,9 +189,11 @@ unemployment_tidy_df =
   mutate(unemployment_tidy_df, month_name = month.name[as.factor(month_name)])
 ```
 
-Join the pols-month, snp, and unemployment datasets.
+<br />
 
-```{r}
+##### Join the pols-month, snp, and unemployment datasets.
+
+```{r join_transit_snp_unemployment}
 pols_snp_df =
   left_join(pols_month_tidy_df, snp_tidy_df, by = c("month_name", "year"))
 
@@ -190,19 +202,11 @@ pols_snp_unemployment_df =
 ```
 
 
-The pols-month dataset contains information related to the number of national politicians who are either democratic or republican from 1947 to 2015. After cleaning and tidying, this dataset contains information on year, month, the number of governors, senators, and representatives for each party, and the indicator of whether the president was republican or democratic is displayed in a single column named "president". The final dataset contains `r nrow(pols_month_tidy_df)` rows and `r ncol(pols_month_tidy_df)` variables. 
+The pols-month dataset contains information related to the number of national politicians who are either democratic or republican from 1947 to 2015. After the data cleaning process, this dataset now contains information on year, month, the number of governors, senators, and representatives for each party, and the indicator of whether the president was republican or democratic is displayed in a single column named "president". The final dataset contains `r nrow(pols_month_tidy_df)` rows and `r ncol(pols_month_tidy_df)` columns. 
 
 The snp dataset contains information on date and Standard & Poor's stock market index. The final dataset after cleaning and tidying contains information on year, month, and the stock market index with `r nrow(snp_tidy_df)` rows and `r ncol(snp_tidy_df)` columns.
 
 The unemployment dataset contains information on year and percentage of unemployment in each month of the associated year. After cleaning and tidying, this dataset now contains information on year, month , and percentage of unemployment. The orginal dataset lists months as separate columns are combined into a single column. The final dataset contains `r nrow(unemployment_tidy_df)` rows and `r ncol(unemployment_tidy_df)` columns.
 
-At the end, pols-month, snp, and unemployment datasets are merged to one dataset. This dataset contains year, month, number of governors, senators, and representatives for each party, president's political party, stock market index, and percentage of unemployment. This dataset has a total of `r nrow(pols_snp_unemployment_df)` rows and `r ncol(pols_snp_unemployment_df)` columns.
-
-
-
-
-
-
-
-
+At the end, pols-month, snp, and unemployment datasets are merged into one dataset. This dataset contains year, month, number of governors, senators, and representatives for each party, president's political party, stock market index, and percentage of unemployment. This dataset has a total of `r nrow(pols_snp_unemployment_df)` rows and `r ncol(pols_snp_unemployment_df)` columns.
 
