@@ -93,7 +93,8 @@ This dataset contains information on NYC transit. Variables included in this dat
 
 * The number of stations that are ADA compliant is `r filter(transit_df, ada == "TRUE") %>% select(ada, line, station_name) %>% distinct(ada, line, station_name) %>% count()`.
 
-* Proportion of station entrances/exits without vending allow entrance is `r filter(transit_df, entry == "TRUE", vending == "NO") %>% distinct(line, station_name, entry, vending) %>% count()/filter(transit_df, vending == "NO") %>% distinct(line, station_name, entry, vending) %>% count()`.
+* Proportion of station entrances/exits without vending allow entrance is `r filter(transit_df, entry == "TRUE" & vending == "NO") %>% distinct(line, station_name, entry, vending) %>% count()/filter(transit_df, vending == "NO") %>% distinct(line, station_name, vending) %>% count()`.
+
 
 
 
